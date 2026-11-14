@@ -281,12 +281,35 @@ input[type=range]{width:150px}
     <h3>更多</h3>
     <div class="foot" style="flex-direction:column;align-items:stretch;gap:8px;margin-top:6px">
       <button class="btn" id="btn-settings">设置</button>
+      <button class="btn" id="btn-ai">AI 配置</button>
     </div>
     <div class="foot"><button class="btn" data-close="modal-more" style="width:100%">关闭</button></div>
   </div>
 </div>
 
 <!-- 内嵌 PDF.js（不依赖网络） -->
+<!-- AI 配置弹窗 -->
+<div id="modal-ai" class="modal hidden">
+  <div class="box" style="max-width:420px">
+    <h3>AI 配置</h3>
+    <div class="row" style="flex-direction:column;align-items:stretch;gap:10px;margin-top:6px">
+      <div><div>接口地址</div>
+        <input id="ai-base" type="text" placeholder="https://api.commandcode.ai/provider/v1" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;font-size:14px;box-sizing:border-box"></div>
+      <div><div>API Key</div>
+        <input id="ai-key" type="password" placeholder="粘贴你的 API Key" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;font-size:14px;box-sizing:border-box"></div>
+      <div><div>快速模型</div>
+        <input id="ai-fast" type="text" placeholder="deepseek/deepseek-v4-flash-fast" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;font-size:14px;box-sizing:border-box"></div>
+      <div><div>强力模型</div>
+        <input id="ai-strong" type="text" placeholder="deepseek/deepseek-v4.1-flash" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;font-size:14px;box-sizing:border-box"></div>
+      <div class="sub">换 API 服务商时，三个输入框按需一起改；留空则恢复默认。</div>
+    </div>
+    <div class="foot">
+      <button class="btn" data-close="modal-ai">取消</button>
+      <button class="btn primary" id="ai-save">保存</button>
+    </div>
+  </div>
+</div>
+
 <script id="pdfjs-lib">/**
  * @licstart The following is the entire license notice for the
  * JavaScript code in this page
@@ -340,9 +363,12 @@ input[type=range]{width:150px}
 
 /* ---------------------------------------------------- 内置模型配置 */
 const AI = {
-  baseUrl: 'https://api.commandcode.ai/provider/v1',
+  get baseUrl() { return localStorage.getItem('pr.baseUrl') || 'https://api.commandcode.ai/provider/v1'; },
   get apiKey() { return localStorage.getItem('pr.apiKey') || ''; },
-  models: { fast: 'deepseek/deepseek-v4-flash-fast', strong: 'deepseek/deepseek-v4.1-flash' },
+  get models() { return {
+    fast: localStorage.getItem('pr.modelFast') || 'deepseek/deepseek-v4-flash-fast',
+    strong: localStorage.getItem('pr.modelStrong') || 'deepseek/deepseek-v4.1-flash',
+  }; },
   timeout: 120000,
 };
 
@@ -1741,6 +1767,26 @@ function bindUI() {
     if (state.saveOk === false) exportAnnotations();
   });
   $('#btn-more').addEventListener('click', () => $('#modal-more').classList.remove('hidden'));
+  $('#btn-ai').addEventListener('click', () => {
+    $('#modal-more').classList.add('hidden');
+    $('#ai-base').value = localStorage.getItem('pr.baseUrl') || 'https://api.commandcode.ai/provider/v1';
+    $('#ai-key').value = localStorage.getItem('pr.apiKey') || '';
+    $('#ai-fast').value = localStorage.getItem('pr.modelFast') || 'deepseek/deepseek-v4-flash-fast';
+    $('#ai-strong').value = localStorage.getItem('pr.modelStrong') || 'deepseek/deepseek-v4.1-flash';
+    $('#modal-ai').classList.remove('hidden');
+  });
+  $('#ai-save').addEventListener('click', () => {
+    const b = $('#ai-base').value.trim();
+    const k = $('#ai-key').value.trim();
+    const f = $('#ai-fast').value.trim();
+    const s = $('#ai-strong').value.trim();
+    if (b) localStorage.setItem('pr.baseUrl', b); else localStorage.removeItem('pr.baseUrl');
+    if (k) localStorage.setItem('pr.apiKey', k); else localStorage.removeItem('pr.apiKey');
+    if (f) localStorage.setItem('pr.modelFast', f); else localStorage.removeItem('pr.modelFast');
+    if (s) localStorage.setItem('pr.modelStrong', s); else localStorage.removeItem('pr.modelStrong');
+    $('#modal-ai').classList.add('hidden');
+    toast('AI 配置已保存');
+  });
   $('#btn-settings').addEventListener('click', () => {
     $('#modal-more').classList.add('hidden');
     loadVoices();
