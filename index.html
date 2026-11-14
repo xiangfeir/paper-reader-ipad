@@ -2009,7 +2009,7 @@ boot();
 (function(){
   function ensureKey(){
     if (localStorage.getItem('pr.apiKey')) return;
-    var k = window.prompt('First use: paste your API Key (stored only on this device)');
+    var k = window.prompt('\u9996\u6b21\u4f7f\u7528\uff1a\u8bf7\u7c98\u8d34 API Key\uff08\u53ea\u4fdd\u5b58\u5728\u672c\u673a\uff0c\u4e0d\u4f1a\u4e0a\u4f20\uff09');
     if (k && k.trim()) { localStorage.setItem('pr.apiKey', k.trim()); location.reload(); }
   }
   setTimeout(ensureKey, 900);
